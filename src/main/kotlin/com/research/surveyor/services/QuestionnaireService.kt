@@ -5,7 +5,9 @@ import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
 import com.research.surveyor.repositories.QuestionnaireRepository
+import org.springframework.stereotype.Service
 
+@Service
 class QuestionnaireService(private val questionnaireRepository: QuestionnaireRepository) {
     fun create(questionnaireToCreate: Questionnaire): Questionnaire {
         if (questionnaireToCreate.status != QuestionnaireStatus.DRAFT)
