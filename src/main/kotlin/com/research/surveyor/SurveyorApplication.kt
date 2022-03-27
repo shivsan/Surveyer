@@ -1,4 +1,4 @@
-package com.research.Surveyor
+package com.research.surveyor
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
