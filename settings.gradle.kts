@@ -1,1 +1,1 @@
-rootProject.name = "surveyer"
+rootProject.name = "surveyor"
