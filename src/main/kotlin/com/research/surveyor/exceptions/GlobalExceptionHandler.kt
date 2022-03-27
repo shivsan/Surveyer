@@ -8,8 +8,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
-    @ExceptionHandler(value = [NumberFormatException::class])
-    protected fun handleConversionServerError(ex: Exception): ResponseEntity<Any> {
+    @ExceptionHandler(value = [InvalidRequestException::class])
+    protected fun handleInvalidRequestError(ex: InvalidRequestException): ResponseEntity<Any> {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(ErrorResponse(ex.message!!))

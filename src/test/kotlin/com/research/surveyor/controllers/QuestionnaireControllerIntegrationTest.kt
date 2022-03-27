@@ -2,6 +2,7 @@ package com.research.surveyor.controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
+import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
 import com.research.surveyor.services.QuestionnaireService
@@ -41,6 +42,22 @@ class QuestionnaireControllerIntegrationTest {
                 .content(objectMapper.writeValueAsBytes(fakeQuestionnaire))
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isCreated)
+            .andExpect(
+                MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(fakeQuestionnaire.copy(id = 1)))
+            )
+    }
+
+    @Test
+    internal fun `Should get 400 if questionnaire request is invalid`() {
+        every { questionnaireService.create(fakeQuestionnaire) } throws InvalidRequestException("")
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .post("/questionnaires")
+                .content(objectMapper.writeValueAsBytes(fakeQuestionnaire))
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest)
+        // TODO: Assert content
     }
 }
 
