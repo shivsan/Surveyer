@@ -2,6 +2,7 @@ package com.research.surveyor.repositories
 
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
+import kotlin.test.assertEquals
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be`
 import org.junit.jupiter.api.Test
@@ -27,8 +28,7 @@ class QuestionnaireRepositoryTest {
 
         savedQuestionnaire.id `should not be` 0
 
-        // TODO: Improve fetching. Can't expect to get the id as 1, unless the db is cleared.
-        savedQuestionnaire `should be equal to` fakeQuestionnaire.copy(id = savedQuestionnaire.id)
+        savedQuestionnaire `should be equal to` fakeQuestionnaire.copy(id = savedQuestionnaire.id, questions = emptyList()) // For some reason, fakeQuestionnaire has a PersistentBag for the emptyQyestions
     }
 
     @Test
@@ -53,4 +53,4 @@ class QuestionnaireRepositoryTest {
 }
 
 private val fakeQuestionnaire =
-    Questionnaire(title = "New questionnaire - creation", status = QuestionnaireStatus.DRAFT)
+    Questionnaire(title = "New questionnaire - creation", status = QuestionnaireStatus.DRAFT, questions = emptyList())

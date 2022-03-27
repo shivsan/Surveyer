@@ -8,3 +8,6 @@ CREATE TABLE IF NOT EXISTS Question (
     question_value varchar(255),
     questionnaire_id int(10)
 );
+ALTER TABLE Question
+    ADD CONSTRAINT QUESTION_QUESTIONNAIRE_ID_QUESTIONNAIRE_FK
+        FOREIGN KEY (questionnaire_id) REFERENCES Questionnaire(id);

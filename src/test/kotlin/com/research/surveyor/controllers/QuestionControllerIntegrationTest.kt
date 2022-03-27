@@ -2,6 +2,7 @@ package com.research.surveyor.controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
+import com.research.surveyor.controllers.request.QuestionRequest
 import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.Question
 import com.research.surveyor.models.Questionnaire
@@ -35,7 +36,7 @@ class QuestionControllerIntegrationTest {
 
     @Test
     internal fun `Should create question`() {
-        every { questionService.create(fakeQuestion) } returns fakeQuestion.copy(id = 1)
+        every { questionService.create(fakeQuestionRequest) } returns fakeQuestion.copy(id = 1)
 
         mockMvc.perform(
             MockMvcRequestBuilders
@@ -50,7 +51,7 @@ class QuestionControllerIntegrationTest {
 
     @Test
     internal fun `Should update question`() {
-        every { questionService.update(fakeQuestion) } returns fakeQuestion.copy(questionValue = "New title")
+        every { questionService.update(fakeQuestionRequest) } returns fakeQuestion.copy(questionValue = "New title")
 
         mockMvc.perform(
             MockMvcRequestBuilders
@@ -59,12 +60,12 @@ class QuestionControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isNoContent)
 
-        verify { questionService.update(fakeQuestion.copy(questionValue = "New question")) }
+        verify { questionService.update(fakeQuestionRequest) }
     }
 
     @Test
     internal fun `Should get 400 if question request is invalid`() {
-        every { questionService.create(fakeQuestion) } throws InvalidRequestException("")
+        every { questionService.create(fakeQuestionRequest) } throws InvalidRequestException("")
 
         mockMvc.perform(
             MockMvcRequestBuilders
@@ -90,4 +91,6 @@ class QuestionControllerIntegrationTest {
 }
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
-private val fakeQuestion = Question(questionValue = "New question", questionnaireId = fakeQuestionnaire.id)
+private val fakeQuestion = Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+private val fakeQuestionRequest =
+    QuestionRequest(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)

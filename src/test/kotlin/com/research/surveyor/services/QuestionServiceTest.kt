@@ -1,10 +1,12 @@
 package com.research.surveyor.services
 
+import com.research.surveyor.controllers.request.QuestionRequest
 import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.models.Question
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
 import com.research.surveyor.repositories.QuestionRepository
+import com.research.surveyor.repositories.QuestionnaireRepository
 import io.mockk.every
 import io.mockk.mockk
 import java.util.*
@@ -15,23 +17,26 @@ import org.junit.jupiter.api.Test
 
 internal class QuestionServiceTest {
     private val questionRepository = mockk<QuestionRepository>()
-    private val questionService = QuestionService(questionRepository)
+    private val questionnaireRepository = mockk<QuestionnaireRepository>()
+    private val questionService = QuestionService(questionRepository, questionnaireRepository)
 
     @Test
     fun `should create question`() {
-        every { questionRepository.save(fakeQuestion) } returns fakeQuestion.copy(id = 1)
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
+        every { questionRepository.save(fakeQuestion) } returns fakeQuestion
 
-        val createdQuestion = questionService.create(fakeQuestion)
+        val createdQuestion = questionService.create(fakeQuestionRequest)
 
-        createdQuestion `should be equal to` fakeQuestion.copy(id = 1)
+        createdQuestion `should be equal to` fakeQuestion
     }
 
     // TODO: Add 404 for updating question
     @Test
     fun `should update question`() {
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
         every { questionRepository.save(fakeQuestion) } returns fakeQuestion.copy(questionValue = "afaf")
 
-        val updatedQuestion = questionService.update(fakeQuestion)
+        val updatedQuestion = questionService.update(fakeQuestionRequest)
 
         updatedQuestion `should be equal to` fakeQuestion.copy(questionValue = "afaf")
     }
@@ -54,4 +59,5 @@ internal class QuestionServiceTest {
 }
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
-private val fakeQuestion = Question(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
+private val fakeQuestion = Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+private val fakeQuestionRequest = QuestionRequest(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)

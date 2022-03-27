@@ -1,5 +1,6 @@
 package com.research.surveyor.controllers
 
+import com.research.surveyor.controllers.request.QuestionRequest
 import com.research.surveyor.models.Question
 import com.research.surveyor.services.QuestionService
 import org.springframework.http.HttpStatus
@@ -17,15 +18,15 @@ class QuestionController(private val questionService: QuestionService) {
     @PostMapping("/questionnaires/{questionnaireId}/questions")
     fun create(
         @PathVariable("questionnaireId") questionnaireId: Long,
-        @RequestBody question: Question
+        @RequestBody questionRequest: QuestionRequest
     ): ResponseEntity<Question> {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(questionService.create(question.copy(questionnaireId = questionnaireId)))
+            .body(questionService.create(questionRequest.copy(questionnaireId = questionnaireId)))
     }
 
     @PutMapping("/questionnaires/{questionnaireId}/questions/{id}")
-    fun update(@PathVariable questionnaireId: Long,@PathVariable id: Long, @RequestBody question: Question): ResponseEntity<Unit> {
-        questionService.update(question.copy(id = id, questionnaireId = questionnaireId))
+    fun update(@PathVariable questionnaireId: Long,@PathVariable id: Long, @RequestBody questionRequest: QuestionRequest): ResponseEntity<Unit> {
+        questionService.update(questionRequest.copy(id = id, questionnaireId = questionnaireId))
         return ResponseEntity.noContent().build()
     }
 

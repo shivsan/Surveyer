@@ -1,5 +1,6 @@
 package com.research.surveyor.controllers
 
+import com.research.surveyor.controllers.request.QuestionRequest
 import com.research.surveyor.models.Question
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
@@ -17,12 +18,12 @@ internal class QuestionControllerTest {
 
     @Test
     fun `should create question`() {
-        val questionToCreate = Question(questionValue = "New question", questionnaireId = fakeQuestionnaire.id)
-        every { questionService.create(questionToCreate) } returns questionToCreate.copy(id = 1)
+        val questionToCreate = fakeQuestionRequest
+        every { questionService.create(questionToCreate) } returns fakeQuestion
 
         val createdQuestion = questionController.create(fakeQuestionnaire.id, questionToCreate)
 
-        createdQuestion.body `should be equal to` questionToCreate.copy(id = 1)
+        createdQuestion.body `should be equal to` fakeQuestion.copy(id = 1)
     }
 
     @Test
@@ -38,14 +39,16 @@ internal class QuestionControllerTest {
     @Test
     fun `should update the question`() {
         val questionToUpdate = fakeQuestion
-        every { questionService.update(fakeQuestion) } returns questionToUpdate
+        every { questionService.update(fakeQuestionRequest) } returns questionToUpdate
 
-        val fetchedQuestion = questionController.update(fakeQuestionnaire.id, fakeQuestion.id, fakeQuestion)
+        val fetchedQuestion = questionController.update(fakeQuestionnaire.id, fakeQuestion.id, fakeQuestionRequest)
 
         fetchedQuestion.statusCode `should be equal to` HttpStatus.NO_CONTENT
-        verify { questionService.update(fakeQuestion) }
+        verify { questionService.update(fakeQuestionRequest) }
     }
 }
 
+private val questionValue = "New question"
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
-private val fakeQuestion = Question(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
+private val fakeQuestion = Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+private val fakeQuestionRequest = QuestionRequest(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)

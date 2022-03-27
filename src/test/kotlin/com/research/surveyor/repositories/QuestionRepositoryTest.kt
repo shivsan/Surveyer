@@ -18,8 +18,14 @@ class QuestionRepositoryTest {
     @Autowired
     private lateinit var questionRepository: QuestionRepository
 
+    @Autowired
+    private lateinit var questionnaireRepository: QuestionnaireRepository
+
     @Test
     internal fun `should save the question`() {
+        val questionnaire = questionnaireRepository.save(fakeQuestionnaire)
+        val fakeQuestion = Question(questionValue = "New question - creation", questionnaire = questionnaire)
+
         val savedQuestion = questionRepository.save(fakeQuestion)
 
         savedQuestion.id `should not be` 0
@@ -51,4 +57,4 @@ class QuestionRepositoryTest {
 private val fakeQuestionnaire =
     Questionnaire(title = "New question - creation", status = QuestionnaireStatus.DRAFT)
 private val fakeQuestion =
-    Question(questionValue = "New question - creation", questionnaireId = fakeQuestionnaire.id)
+    Question(questionValue = "New question - creation", questionnaire = fakeQuestionnaire)
