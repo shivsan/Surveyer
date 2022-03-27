@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: surveyor
+  datasource:
+    url: jdbc:h2:mem:subscriptions;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
+  flyway:
+    url: jdbc:h2:mem:subscriptions;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MYSQL
+    schemas: subscriptions
+    enabled: false
+    locations:
+      - classpath:db/migration
