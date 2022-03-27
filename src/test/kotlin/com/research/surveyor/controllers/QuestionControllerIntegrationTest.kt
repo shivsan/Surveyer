@@ -14,8 +14,6 @@ import com.research.surveyor.models.QuestionnaireStatus
 import com.research.surveyor.services.QuestionService
 import io.mockk.every
 import io.mockk.verify
-import kotlin.test.BeforeTest
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -98,7 +96,7 @@ class QuestionControllerIntegrationTest {
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
 private val fakeQuestion =
-    Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+    Question(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
 private val fakeOptions = listOf(
     AnswerOption(1, "a", "Monday", fakeQuestion),
     AnswerOption(2, "b", "Monday", fakeQuestion),

@@ -1,14 +1,11 @@
 package com.research.surveyor.repositories
 
-import com.research.surveyor.controllers.request.AnswerOptionRequest
-import com.research.surveyor.controllers.request.QuestionRequest
 import com.research.surveyor.models.AnswerOption
 import com.research.surveyor.models.Question
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be`
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,7 +28,7 @@ class AnswerOptionRepositoryTest {
     @Test
     internal fun `should save the answer option`() {
         val questionnaire = questionnaireRepository.save(fakeQuestionnaire)
-        val savedQuestion = questionRepository.save(fakeQuestion.copy(questionnaire = questionnaire))
+        val savedQuestion = questionRepository.save(fakeQuestion.copy(questionnaireId = questionnaire.id))
         val savedAnswerOption = answerOptionRepository.save(fakeAnswerOption.copy(question = savedQuestion))
 
         savedAnswerOption.id `should not be` 0
@@ -45,7 +42,7 @@ class AnswerOptionRepositoryTest {
     @Test
     internal fun `should update all the answer options for a question`() {
         val questionnaire = questionnaireRepository.save(fakeQuestionnaire)
-        val savedQuestion = questionRepository.save(fakeQuestion.copy(questionnaire = questionnaire))
+        val savedQuestion = questionRepository.save(fakeQuestion.copy(questionnaireId = questionnaire.id))
         val questionId = savedQuestion.id
         answerOptionRepository.save(fakeAnswerOption.copy(optionIndex = "a", question = savedQuestion))
         answerOptionRepository.save(fakeAnswerOption.copy(optionIndex = "b", question = savedQuestion))
@@ -61,12 +58,12 @@ class AnswerOptionRepositoryTest {
 
         val updatedQuestion = questionRepository.findById(questionId)
 
-        updatedQuestion.get() `should be equal to` fakeQuestion
+        updatedQuestion.get() `should be equal to` fakeQuestion.copy(id = savedQuestion.id, questionnaireId = questionnaire.id)
         val updatedAnswerOption1 = answerOptionRepository.findById(updatedAnswerOptions.toList()[0].id)
         val updatedAnswerOption2 = answerOptionRepository.findById(updatedAnswerOptions.toList()[1].id)
 
-        updatedAnswerOption1.get().question `should be equal to` fakeQuestion
-        updatedAnswerOption2.get().question `should be equal to` fakeQuestion
+        updatedAnswerOption1.get().question `should be equal to` fakeQuestion.copy(id = savedQuestion.id, questionnaireId = questionnaire.id)
+        updatedAnswerOption2.get().question `should be equal to` fakeQuestion.copy(id = savedQuestion.id, questionnaireId = questionnaire.id)
     }
 
     @Test
@@ -83,7 +80,7 @@ class AnswerOptionRepositoryTest {
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
 private val fakeQuestion =
-    Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+    Question(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
 private val fakeAnswerOption =
     AnswerOption("a", "Monday", fakeQuestion)
 

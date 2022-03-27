@@ -9,14 +9,21 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(value = [InvalidRequestException::class])
-    protected fun handleInvalidRequestError(ex: InvalidRequestException): ResponseEntity<Any> {
+    protected fun handleInvalidRequestError(ex: InvalidRequestException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(ErrorResponse(ex.message!!))
     }
 
+    @ExceptionHandler(value = [EntityNotFoundException::class])
+    protected fun handleNotFoundRequestError(ex: EntityNotFoundException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(ErrorResponse(ex.message!!))
+    }
+
     @ExceptionHandler(value = [Exception::class])
-    protected fun handleInternalServerError(ex: Exception): ResponseEntity<Any> {
+    protected fun handleInternalServerError(ex: Exception): ResponseEntity<ErrorResponse> {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse(ex.message!!))

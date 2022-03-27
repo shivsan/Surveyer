@@ -28,7 +28,7 @@ class QuestionnaireRepositoryTest {
 
         savedQuestionnaire.id `should not be` 0
 
-        savedQuestionnaire `should be equal to` fakeQuestionnaire.copy(id = savedQuestionnaire.id, questions = emptyList()) // For some reason, fakeQuestionnaire has a PersistentBag for the emptyQyestions
+        savedQuestionnaire `should be equal to` fakeQuestionnaire.copy(id = savedQuestionnaire.id)
     }
 
     @Test
@@ -53,4 +53,4 @@ class QuestionnaireRepositoryTest {
 }
 
 private val fakeQuestionnaire =
-    Questionnaire(title = "New questionnaire - creation", status = QuestionnaireStatus.DRAFT, questions = emptyList())
+    Questionnaire(title = "New questionnaire - creation", status = QuestionnaireStatus.DRAFT)

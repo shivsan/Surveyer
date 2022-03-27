@@ -46,7 +46,7 @@ class QuestionController(private val questionService: QuestionService) {
 private fun Question.toResponse() = QuestionResponse(
     id = this.id,
     questionValue = this.questionValue,
-    questionnaireId = this.questionnaire.id,
+    questionnaireId = this.questionnaireId,
     options = this.options.map { option -> option.toResponse() })
 
 private fun AnswerOption.toResponse() = AnswerOptionResponse(this.id, this.optionIndex, this.option)

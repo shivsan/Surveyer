@@ -5,7 +5,6 @@ import com.research.surveyor.controllers.request.QuestionRequest
 import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.models.AnswerOption
 import com.research.surveyor.models.Question
-import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.repositories.AnswerOptionRepository
 import com.research.surveyor.repositories.QuestionRepository
 import com.research.surveyor.repositories.QuestionnaireRepository
@@ -20,7 +19,9 @@ class QuestionService(
     fun create(questionRequest: QuestionRequest): Question {
         val questionnaire =
             questionnaireRepository.findById(questionRequest.questionnaireId)// TODO: test this, 404 this
-        val question = questionRequest.toQuestion(questionnaire.get())
+        if (questionnaire.isEmpty)
+            throw EntityNotFoundException("Could not find questionnaire")
+        val question = questionRequest.toQuestion()
         val savedQuestion = questionRepository.save(question)
         val savedAnswerOptions =
             answerOptionRepository.saveAll(questionRequest.options.map { option -> option.toAnswerOption(savedQuestion) })
@@ -34,18 +35,24 @@ class QuestionService(
 
     fun update(questionToUpdate: QuestionRequest): Question {
         val questionnaire = questionnaireRepository.findById(questionToUpdate.questionnaireId)
-        val question = questionToUpdate.toQuestion(questionnaire.get())
+        if (questionnaire.isEmpty)
+            throw EntityNotFoundException("Could not find questionnaire")
+
+        if (questionRepository.findById(questionToUpdate.id).isEmpty)
+            throw EntityNotFoundException("Could not find question.")
+
+        val question = questionToUpdate.toQuestion()
         val savedQuestion = questionRepository.save(question)
         // TODO: Move to a persistence layer
-        answerOptionRepository.deleteAll(savedQuestion.options)
+        answerOptionRepository.deleteAll(answerOptionRepository.findByQuestion(savedQuestion))
         val savedAnswerOptions =
             answerOptionRepository.saveAll(questionToUpdate.options.map { option -> option.toAnswerOption(savedQuestion) })
         return questionRepository.findById(savedQuestion.id).get().copy(options = savedAnswerOptions.toList())
     }
 }
 
-private fun QuestionRequest.toQuestion(questionnaire: Questionnaire) =
-    Question(this.id, this.questionValue, questionnaire)
+private fun QuestionRequest.toQuestion() =
+    Question(this.id, this.questionValue, this.questionnaireId)
 
 private fun AnswerOptionRequest.toAnswerOption(question: Question) =
     AnswerOption(this.id, this.optionIndex, this.option, question)

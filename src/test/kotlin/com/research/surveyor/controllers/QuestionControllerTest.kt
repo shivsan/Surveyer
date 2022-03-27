@@ -54,7 +54,7 @@ internal class QuestionControllerTest {
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
 private val fakeQuestion =
-    Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+    Question(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
 private val fakeOptions = listOf(
     AnswerOption(1, "a", "Monday", fakeQuestion),
     AnswerOption(2, "b", "Monday", fakeQuestion),

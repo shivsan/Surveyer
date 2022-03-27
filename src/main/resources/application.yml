@@ -1,1 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:officialaccounts;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;MODE=MYSQL
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 10
+          generate_statistics: false
+        format_sql: true
+  application:
+    name: surveyor
 
+info:
+  app:
+    name: surveyor
+    version: 0.0.1
+    encoding: "UTF-8"
+    java:
+      version: 11.0.9

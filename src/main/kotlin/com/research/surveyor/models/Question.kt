@@ -17,10 +17,8 @@ data class Question(
     val id: Long = 0,
     val questionValue: String,
     // TODO: add a question ordering
-    @ManyToOne(cascade = [CascadeType.ALL], optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "QUESTIONNAIRE_ID")
-    val questionnaire: Questionnaire,
-    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "question", fetch = FetchType.EAGER)
+    val questionnaireId: Long,
+    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "question", fetch = FetchType.LAZY)
     val options: List<AnswerOption> = emptyList()
 )
 
@@ -31,7 +29,7 @@ data class AnswerOption(
     val id: Long = 0,
     val optionIndex: String, // TODO: Validate ordering
     val option: String,
-    @ManyToOne(cascade = [CascadeType.ALL], optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     val question: Question
 ) {
     constructor(

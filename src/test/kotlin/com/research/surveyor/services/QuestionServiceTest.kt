@@ -41,6 +41,7 @@ internal class QuestionServiceTest {
     fun `should update question`() {
         every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
         every { questionRepository.save(fakeQuestion.copy(questionValue = "afaf")) } returns fakeQuestion
+        every { answerOptionRepository.findByQuestion(fakeQuestion) } returns fakeOptions
         every { answerOptionRepository.deleteAll(any()) } returns Unit
         every { answerOptionRepository.saveAll<AnswerOption>(any()) } returns fakeOptions // TODO: Match this properly
         every { questionRepository.findById(fakeQuestion.id) } returns Optional.of(fakeQuestion)
@@ -74,7 +75,7 @@ internal class QuestionServiceTest {
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
 private val fakeQuestion =
-    Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+    Question(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
 private val fakeOptions = listOf(
     AnswerOption("a", "Monday", fakeQuestion),
     AnswerOption("b", "Monday", fakeQuestion),

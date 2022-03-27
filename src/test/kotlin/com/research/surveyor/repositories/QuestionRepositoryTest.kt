@@ -65,7 +65,7 @@ class QuestionRepositoryTest {
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
 private val fakeQuestion =
-    Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+    Question(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
 private val fakeOptions = listOf(
     AnswerOption("a", "Monday", fakeQuestion),
     AnswerOption("b", "Monday", fakeQuestion),
