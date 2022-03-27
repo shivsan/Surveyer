@@ -9,7 +9,7 @@ import javax.persistence.Id
 data class Questionnaire(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    val id: Int = 0,
+    val id: Long = 0,
     val title: String,
     val status: QuestionnaireStatus
 )

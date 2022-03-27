@@ -24,3 +24,4 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 }
 
 data class InvalidRequestException(override val message: String): RuntimeException(message)
+data class EntityNotFoundException(override val message: String): RuntimeException(message)

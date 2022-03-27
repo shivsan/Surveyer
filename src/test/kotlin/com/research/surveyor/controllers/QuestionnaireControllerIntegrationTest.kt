@@ -7,11 +7,11 @@ import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
 import com.research.surveyor.services.QuestionnaireService
 import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -48,6 +48,20 @@ class QuestionnaireControllerIntegrationTest {
     }
 
     @Test
+    internal fun `Should update questionnaire`() {
+        every { questionnaireService.update(fakeQuestionnaire) } returns fakeQuestionnaire.copy(title = "New title")
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .put("/questionnaires/${fakeQuestionnaire.id}")
+                .content(objectMapper.writeValueAsBytes(fakeQuestionnaire))
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(MockMvcResultMatchers.status().isNoContent)
+
+        verify { questionnaireService.update(fakeQuestionnaire.copy(title = "New title")) }
+    }
+
+    @Test
     internal fun `Should get 400 if questionnaire request is invalid`() {
         every { questionnaireService.create(fakeQuestionnaire) } throws InvalidRequestException("")
 
@@ -58,6 +72,19 @@ class QuestionnaireControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
         // TODO: Assert content
+    }
+
+    @Test
+    internal fun `Should get questionnaire by id`() {
+        every { questionnaireService.get(fakeQuestionnaire.id) } returns fakeQuestionnaire
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .get("/questionnaires/${fakeQuestionnaire.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(fakeQuestionnaire)))
     }
 }
 
