@@ -2,14 +2,20 @@ package com.research.surveyor.controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
+import com.research.surveyor.controllers.request.AnswerOptionRequest
+import com.research.surveyor.controllers.request.AnswerOptionResponse
 import com.research.surveyor.controllers.request.QuestionRequest
+import com.research.surveyor.controllers.request.QuestionResponse
 import com.research.surveyor.exceptions.InvalidRequestException
+import com.research.surveyor.models.AnswerOption
 import com.research.surveyor.models.Question
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
 import com.research.surveyor.services.QuestionService
 import io.mockk.every
 import io.mockk.verify
+import kotlin.test.BeforeTest
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,16 +42,16 @@ class QuestionControllerIntegrationTest {
 
     @Test
     internal fun `Should create question`() {
-        every { questionService.create(fakeQuestionRequest) } returns fakeQuestion.copy(id = 1)
+        every { questionService.create(fakeQuestionRequest) } returns fakeQuestion.copy(id = 1, options = fakeOptions)
 
         mockMvc.perform(
             MockMvcRequestBuilders
                 .post("/questionnaires/${fakeQuestionnaire.id}/questions")
-                .content(objectMapper.writeValueAsBytes(fakeQuestion))
+                .content(objectMapper.writeValueAsBytes(fakeQuestionRequest))
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isCreated)
             .andExpect(
-                MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(fakeQuestion.copy(id = 1)))
+                MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(fakeQuestionResponse.copy(id = 1)))
             )
     }
 
@@ -56,7 +62,7 @@ class QuestionControllerIntegrationTest {
         mockMvc.perform(
             MockMvcRequestBuilders
                 .put("/questionnaires/${fakeQuestionnaire.id}/questions/${fakeQuestion.id}")
-                .content(objectMapper.writeValueAsBytes(fakeQuestion))
+                .content(objectMapper.writeValueAsBytes(fakeQuestionRequest))
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isNoContent)
 
@@ -70,7 +76,7 @@ class QuestionControllerIntegrationTest {
         mockMvc.perform(
             MockMvcRequestBuilders
                 .post("/questionnaires/${fakeQuestionnaire.id}/questions")
-                .content(objectMapper.writeValueAsBytes(fakeQuestion))
+                .content(objectMapper.writeValueAsBytes(fakeQuestionRequest))
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest)
         // TODO: Assert content
@@ -78,7 +84,7 @@ class QuestionControllerIntegrationTest {
 
     @Test
     internal fun `Should get question by id`() {
-        every { questionService.get(fakeQuestionnaire.id, fakeQuestion.id) } returns fakeQuestion
+        every { questionService.get(fakeQuestionnaire.id, fakeQuestion.id) } returns fakeQuestion.copy(options = fakeOptions)
 
         mockMvc.perform(
             MockMvcRequestBuilders
@@ -86,11 +92,35 @@ class QuestionControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(fakeQuestion)))
+            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(fakeQuestionResponse)))
     }
 }
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
-private val fakeQuestion = Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+private val fakeQuestion =
+    Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+private val fakeOptions = listOf(
+    AnswerOption(1, "a", "Monday", fakeQuestion),
+    AnswerOption(2, "b", "Monday", fakeQuestion),
+    AnswerOption(3, "c", "Monday", fakeQuestion),
+    AnswerOption(4, "d", "Monday", fakeQuestion)
+)
+
+
+private val fakeOptionsRequest = listOf(
+    AnswerOptionRequest(1, "a", "Monday"),
+    AnswerOptionRequest(2, "b", "Monday"),
+    AnswerOptionRequest(3, "c", "Monday"),
+    AnswerOptionRequest(4, "d", "Monday")
+)
+
 private val fakeQuestionRequest =
-    QuestionRequest(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
+    QuestionRequest(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id, options = fakeOptionsRequest)
+private val fakeOptionsResponse = listOf(
+    AnswerOptionResponse(1, "a", "Monday"),
+    AnswerOptionResponse(2, "b", "Monday"),
+    AnswerOptionResponse(3, "c", "Monday"),
+    AnswerOptionResponse(4, "d", "Monday")
+)
+private val fakeQuestionResponse =
+    QuestionResponse(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id, options = fakeOptionsResponse)

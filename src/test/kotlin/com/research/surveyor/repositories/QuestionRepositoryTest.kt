@@ -1,10 +1,14 @@
 package com.research.surveyor.repositories
 
+import com.research.surveyor.controllers.request.AnswerOptionRequest
+import com.research.surveyor.controllers.request.QuestionRequest
+import com.research.surveyor.models.AnswerOption
 import com.research.surveyor.models.Question
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should not be`
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,10 +25,14 @@ class QuestionRepositoryTest {
     @Autowired
     private lateinit var questionnaireRepository: QuestionnaireRepository
 
+    @BeforeEach
+    fun init() {
+
+    }
+
     @Test
     internal fun `should save the question`() {
         val questionnaire = questionnaireRepository.save(fakeQuestionnaire)
-        val fakeQuestion = Question(questionValue = "New question - creation", questionnaire = questionnaire)
 
         val savedQuestion = questionRepository.save(fakeQuestion)
 
@@ -54,7 +62,23 @@ class QuestionRepositoryTest {
     }
 }
 
-private val fakeQuestionnaire =
-    Questionnaire(title = "New question - creation", status = QuestionnaireStatus.DRAFT)
+
+private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
 private val fakeQuestion =
-    Question(questionValue = "New question - creation", questionnaire = fakeQuestionnaire)
+    Question(id = 1, questionValue = "Question?", questionnaire = fakeQuestionnaire)
+private val fakeOptions = listOf(
+    AnswerOption("a", "Monday", fakeQuestion),
+    AnswerOption("b", "Monday", fakeQuestion),
+    AnswerOption("c", "Monday", fakeQuestion),
+    AnswerOption("d", "Monday", fakeQuestion)
+)
+
+private val fakeOptionsRequest = listOf(
+    AnswerOptionRequest(1, "a", "Monday"),
+    AnswerOptionRequest(2, "b", "Monday"),
+    AnswerOptionRequest(3, "c", "Monday"),
+    AnswerOptionRequest(4, "d", "Monday")
+)
+private val fakeQuestionRequest =
+    QuestionRequest(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id, options = fakeOptionsRequest)
+
