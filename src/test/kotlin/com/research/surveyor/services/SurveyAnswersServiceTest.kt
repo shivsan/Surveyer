@@ -1,12 +1,13 @@
 package com.research.surveyor.services
 
+import com.research.surveyor.controllers.request.Answer
+import com.research.surveyor.controllers.request.SurveyAnswersDto
 import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.exceptions.InvalidRequestException
-import com.research.surveyor.models.Answer
 import com.research.surveyor.models.Question
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
-import com.research.surveyor.models.SurveyAnswers
+import com.research.surveyor.models.SurveyAnswer
 import com.research.surveyor.repositories.AnswerOptionRepository
 import com.research.surveyor.repositories.QuestionRepository
 import com.research.surveyor.repositories.QuestionnaireRepository
@@ -35,12 +36,12 @@ internal class SurveyAnswersServiceTest {
         every { questionRepository.existsById(any()) } returns true
         every { questionnaireRepository.existsById(any()) } returns true
         every { answerOptionRepository.existsById(any()) } returns true
-        every { surveyAnswersRepository.save(fakeSurveyAnswers) } returns fakeSurveyAnswers.copy(id = 1)
         every { questionRepository.findByQuestionnaireId(fakeQuestionnaire.id) } returns listOf(fakeQuestion1, fakeQuestion2)
+        every { surveyAnswersRepository.saveAll<SurveyAnswer>(any()) } returns listOf(fakeSurveyAnswer.copy(id = 1))
 
-        val createdSurveyAnswers = surveyAnswersService.create(fakeSurveyAnswers)
+        val createdSurveyAnswers = surveyAnswersService.create(fakeSurveyAnswersRequest)
 
-        createdSurveyAnswers `should be equal to` fakeSurveyAnswers.copy(id = 1)
+        createdSurveyAnswers `should be equal to` listOf(fakeSurveyAnswer.copy(id = 1))
     }
 
     @Test
@@ -49,19 +50,19 @@ internal class SurveyAnswersServiceTest {
         every { questionnaireRepository.existsById(any()) } returns true
         every { answerOptionRepository.existsById(any()) } returns true
 
-        invoking { surveyAnswersService.create(fakeSurveyAnswers) } shouldThrow EntityNotFoundException::class
+        invoking { surveyAnswersService.create(fakeSurveyAnswersRequest) } shouldThrow EntityNotFoundException::class
 
         every { questionRepository.existsById(any()) } returns true
         every { questionnaireRepository.existsById(any()) } returns false
         every { answerOptionRepository.existsById(any()) } returns true
 
-        invoking { surveyAnswersService.create(fakeSurveyAnswers) } shouldThrow EntityNotFoundException::class
+        invoking { surveyAnswersService.create(fakeSurveyAnswersRequest) } shouldThrow EntityNotFoundException::class
 
         every { questionRepository.existsById(any()) } returns true
         every { questionnaireRepository.existsById(any()) } returns true
         every { answerOptionRepository.existsById(any()) } returns false
 
-        invoking { surveyAnswersService.create(fakeSurveyAnswers) } shouldThrow EntityNotFoundException::class
+        invoking { surveyAnswersService.create(fakeSurveyAnswersRequest) } shouldThrow EntityNotFoundException::class
     }
 
     @Test
@@ -71,7 +72,7 @@ internal class SurveyAnswersServiceTest {
         every { answerOptionRepository.existsById(any()) } returns true
 
         invoking {
-            surveyAnswersService.create(fakeSurveyAnswers.copy(answers = listOf(fakeAnswer1, fakeAnswer1)))
+            surveyAnswersService.create(fakeSurveyAnswersRequest.copy(answers = listOf(fakeAnswer1, fakeAnswer1)))
         } shouldThrow InvalidRequestException::class
     }
 
@@ -85,7 +86,7 @@ internal class SurveyAnswersServiceTest {
         every { answerOptionRepository.existsById(any()) } returns true
 
         invoking {
-            surveyAnswersService.create(fakeSurveyAnswers.copy(answers = listOf(fakeAnswer1, fakeAnswer1)))
+            surveyAnswersService.create(fakeSurveyAnswersRequest.copy(answers = listOf(fakeAnswer1, fakeAnswer1)))
         } shouldThrow InvalidRequestException::class
     }
 }
@@ -97,7 +98,12 @@ private val fakeQuestion2 =
     Question(id = 2, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
 private val fakeAnswer1 = Answer(questionId = fakeQuestion1.id, 1)
 private val fakeAnswer2 = Answer(questionId = fakeQuestion2.id, 1)
-private val fakeSurveyAnswers = SurveyAnswers(
+private val fakeSurveyAnswer = SurveyAnswer(
     questionnaireId = fakeQuestionnaire.id,
-    answers = listOf(fakeAnswer1, fakeAnswer2)
+    questionId = 1,
+    answerOptionId = 1
+)
+private val fakeSurveyAnswersRequest = SurveyAnswersDto(
+    questionnaireId = 1,
+    answers = listOf(Answer(questionId = 1, answerOptionId = 1), Answer(questionId = 2, answerOptionId = 1))
 )

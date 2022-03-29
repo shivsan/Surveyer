@@ -21,3 +21,17 @@ ALTER TABLE Question
 ALTER TABLE AnswerOption
     ADD CONSTRAINT ANSWER_OPTION_QUESTION_ID_QUESTION_FK
         FOREIGN KEY (question_id) REFERENCES Question(id);
+
+CREATE TABLE IF NOT EXISTS SurveyAnswer (
+    id int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    questionnaire_id int(10),
+    question_id int(10),
+    answer_option_id int(10)
+);
+ALTER TABLE SurveyAnswer
+    ADD CONSTRAINT SURVEY_ANSWER_QUESTIONNAIRE_ID_QUESTIONNAIRE_FK
+        FOREIGN KEY (questionnaire_id) REFERENCES Questionnaire(id);
+
+ALTER TABLE SurveyAnswer
+    ADD CONSTRAINT SURVEY_ANSWER_QUESTION_ID_QUESTION_FK
+        FOREIGN KEY (question_id) REFERENCES Question(id);
