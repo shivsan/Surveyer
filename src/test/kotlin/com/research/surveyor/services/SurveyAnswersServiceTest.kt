@@ -1,6 +1,7 @@
 package com.research.surveyor.services
 
 import com.research.surveyor.controllers.request.SurveyAnswersDto
+import com.research.surveyor.exceptions.ConflictException
 import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.AnswerOption
@@ -40,7 +41,7 @@ internal class SurveyAnswersServiceTest {
 
     @Test
     fun `Should create survey answers`() {
-        every { questionnaireRepository.existsById(any()) } returns true
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
         every { answerOptionRepository.existsByQuestionIdAndId(any(), any()) } returns true
         every { questionRepository.findByQuestionnaireId(fakeQuestionnaire.id) } returns listOf(
             fakeQuestion1,
@@ -64,11 +65,11 @@ internal class SurveyAnswersServiceTest {
 
     @Test
     fun `Should throw exception for bad ids - questionnaire, question, answerOptions`() {
-        every { questionnaireRepository.existsById(any()) } returns true
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
         every { answerOptionRepository.existsByQuestionIdAndId(any(), any()) } returns false
         invoking { surveyAnswersService.create(fakeSurveyAnswersRequest) } shouldThrow InvalidRequestException::class
 
-        every { questionnaireRepository.existsById(any()) } returns false
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.empty()
         every { answerOptionRepository.existsByQuestionIdAndId(any(), any()) } returns true
         invoking { surveyAnswersService.create(fakeSurveyAnswersRequest) } shouldThrow EntityNotFoundException::class
     }
@@ -86,6 +87,7 @@ internal class SurveyAnswersServiceTest {
 
     @Test
     fun `Should not allow incomplete surveys`() {
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
         every { answerOptionRepository.existsByQuestionIdAndId(any(), any()) } returns false
         every { questionnaireRepository.existsById(fakeQuestionnaire.id) } returns true
         every { questionRepository.findByQuestionnaireId(fakeQuestionnaire.id) } returns listOf(
@@ -100,7 +102,7 @@ internal class SurveyAnswersServiceTest {
 
     @Test
     fun `Should not mismatch of questions and answer options`() {
-        every { questionnaireRepository.existsById(fakeQuestionnaire.id) } returns true
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
         every { answerOptionRepository.existsByQuestionIdAndId(any(), any()) } returns false
         every { questionRepository.findByQuestionnaireId(fakeQuestionnaire.id) } returns listOf(
             fakeQuestion1,
@@ -110,6 +112,15 @@ internal class SurveyAnswersServiceTest {
         invoking {
             surveyAnswersService.create(fakeSurveyAnswersRequest.copy(answers = listOf(fakeAnswer1)))
         } shouldThrow InvalidRequestException::class
+    }
+
+    @Test
+    fun `Should submit survey for questionnaire that is not published`() {
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire.copy(status = QuestionnaireStatus.DRAFT))
+
+        invoking {
+            surveyAnswersService.create(fakeSurveyAnswersRequest.copy(answers = listOf(fakeAnswer1)))
+        } shouldThrow ConflictException::class
     }
 
     @Test
@@ -156,7 +167,7 @@ internal class SurveyAnswersServiceTest {
     }
 }
 
-private val fakeQuestionnaire = Questionnaire(id = 1, title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
+private val fakeQuestionnaire = Questionnaire(id = 1, title = "New questionnaire", status = QuestionnaireStatus.PUBLISHED)
 private val fakeQuestion1 =
     Question(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
 private val fakeQuestion2 =

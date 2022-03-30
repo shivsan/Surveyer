@@ -1,10 +1,12 @@
 package com.research.surveyor.services
 
 import com.research.surveyor.controllers.request.SurveyAnswersDto
+import com.research.surveyor.exceptions.ConflictException
 import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.AnswerOptionPercentile
 import com.research.surveyor.models.QuestionAnswerStats
+import com.research.surveyor.models.QuestionnaireStatus
 import com.research.surveyor.models.SurveyAnswer
 import com.research.surveyor.models.SurveyAnswers
 import com.research.surveyor.repositories.AnswerOptionRepository
@@ -37,8 +39,11 @@ class SurveyAnswersService(
         if (hasDuplicateAnswers(surveyAnswersRequest))
             throw InvalidRequestException("Duplicate answer for the same question")
 
-        if (!questionnaireRepository.existsById(surveyAnswersRequest.questionnaireId))
+        val questionnaire = questionnaireRepository.findById(surveyAnswersRequest.questionnaireId)
+        if (questionnaire.isEmpty)
             throw EntityNotFoundException("Questionnaire does not exist")
+        if (questionnaire.get().status != QuestionnaireStatus.PUBLISHED)
+            throw ConflictException("Questionnaire is not published.")
         surveyAnswersRequest.answers.forEach { answer ->
             if (!answerOptionRepository.existsByQuestionIdAndId(answer.questionId, answer.answerOptionId)) {
                 throw InvalidRequestException("Answer option with id ${answer.answerOptionId} does not match for question with id ${answer.questionId}")
