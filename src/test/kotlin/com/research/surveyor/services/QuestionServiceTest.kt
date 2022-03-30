@@ -2,6 +2,7 @@ package com.research.surveyor.services
 
 import com.research.surveyor.controllers.request.AnswerOptionRequest
 import com.research.surveyor.controllers.request.QuestionRequest
+import com.research.surveyor.exceptions.ConflictException
 import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.models.AnswerOption
 import com.research.surveyor.models.Question
@@ -12,6 +13,7 @@ import com.research.surveyor.repositories.QuestionRepository
 import com.research.surveyor.repositories.QuestionnaireRepository
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.util.*
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.invoking
@@ -36,7 +38,14 @@ internal class QuestionServiceTest {
         createdQuestion `should be equal to` fakeQuestion.copy(options = fakeOptions)
     }
 
-    // TODO: Add 404 for updating question
+    @Test
+    fun `Should throw 404 when updating non-existent question`() {
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
+        every { questionRepository.findById(fakeQuestion.id) } returns Optional.empty()
+
+        invoking { questionService.update(fakeQuestionRequest) } shouldThrow EntityNotFoundException("Could not find question.")
+    }
+
     @Test
     fun `should update question`() {
         every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
@@ -52,7 +61,7 @@ internal class QuestionServiceTest {
     }
 
     @Test
-    internal fun `Should get the question`() {
+    fun `Should get the question`() {
         every { questionRepository.findById(fakeQuestion.id) } returns Optional.of(fakeQuestion)
 
         val fetchedQuestion = questionService.get(questionId = fakeQuestion.id, questionnaireId = fakeQuestionnaire.id)
@@ -61,7 +70,7 @@ internal class QuestionServiceTest {
     }
 
     @Test
-    internal fun `Should throw 404 for non existent question`() {
+    fun `Should throw 404 for non existent question`() {
         every { questionRepository.findById(fakeQuestion.id) } returns Optional.empty()
 
         invoking {
@@ -70,6 +79,43 @@ internal class QuestionServiceTest {
                 fakeQuestion.id
             )
         } shouldThrow EntityNotFoundException("Could not find question.")
+    }
+
+    @Test
+    fun `Should not allow to update question from a published questionnaire`() {
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(
+            fakeQuestionnaire.copy(status = QuestionnaireStatus.PUBLISHED)
+        )
+
+        invoking { questionService.update(fakeQuestionRequest) } shouldThrow ConflictException::class
+    }
+
+    @Test
+    fun `Should delete a question from a DRAFT questionnaire`() {
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(
+            fakeQuestionnaire.copy(status = QuestionnaireStatus.DRAFT)
+        )
+        every { questionRepository.existsById(fakeQuestion.id) } returns true
+        every { questionRepository.deleteById(fakeQuestion.id) } returns Unit
+
+        questionService.delete(fakeQuestionRequest.id)
+
+        verify { questionRepository.deleteById(fakeQuestion.id) }
+    }
+
+    @Test
+    fun `Should throw 404 if a non-existent question is to be deleted`() {
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(
+            fakeQuestionnaire.copy(status = QuestionnaireStatus.DRAFT)
+        )
+        every {questionRepository.existsById(fakeQuestion.id)} returns false
+
+        invoking { questionService.delete(fakeQuestionRequest.id) } shouldThrow EntityNotFoundException::class
+    }
+
+    @Test
+    fun `Should not allow to delete a question from a published questionnaire`() {
+
     }
 }
 
@@ -90,7 +136,7 @@ private val fakeOptionsRequest = listOf(
 )
 private val fakeQuestionRequest =
     QuestionRequest(
-        id = 1,
+        id = fakeQuestion.id,
         questionValue = "Question?",
         questionnaireId = fakeQuestionnaire.id,
         options = fakeOptionsRequest

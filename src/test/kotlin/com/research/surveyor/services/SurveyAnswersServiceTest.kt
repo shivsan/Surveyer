@@ -63,7 +63,7 @@ internal class SurveyAnswersServiceTest {
     }
 
     @Test
-    internal fun `Should throw exception for bad ids`() {
+    internal fun `Should throw exception for bad ids - questionnaire, question, answerOptions`() {
         every { questionRepository.existsById(any()) } returns false
         every { questionnaireRepository.existsById(any()) } returns true
         every { answerOptionRepository.existsById(any()) } returns true
@@ -95,22 +95,29 @@ internal class SurveyAnswersServiceTest {
     }
 
     @Test
-    internal fun `Should not allow incomplete surveys`() {
+    fun `Should not allow incomplete surveys`() {
+        every { questionnaireRepository.existsById(fakeQuestionnaire.id) } returns true
+        every { questionRepository.existsById(any()) } returns true
         every { questionRepository.findByQuestionnaireId(fakeQuestionnaire.id) } returns listOf(
             fakeQuestion1,
             fakeQuestion2
         )
-        every { questionnaireRepository.existsById(fakeQuestionnaire.id) } returns true
         every { answerOptionRepository.existsById(any()) } returns true
 
         invoking {
-            surveyAnswersService.create(fakeSurveyAnswersRequest.copy(answers = listOf(fakeAnswer1, fakeAnswer1)))
+            surveyAnswersService.create(fakeSurveyAnswersRequest.copy(answers = listOf(fakeAnswer1)))
         } shouldThrow InvalidRequestException::class
     }
 
     @Test
-    internal fun `Should get stats for answers of a question`() {
-        every { surveyAnswerRepository.findAllByQuestionId(fakeQuestion1.id) } returns listOf(fakeAnswer1.copy(answerOptionId = 1))
+    internal fun `Should get stats for all answers of a question`() {
+        every { answerOptionRepository.findByQuestionId(fakeQuestion1.id) } returns listOf(
+            fakeAnswerOption1.copy(id = 1),
+            fakeAnswerOption2.copy(id = 2)
+        )
+        every { surveyAnswerRepository.findAllByQuestionId(fakeQuestion1.id) } returns listOf(
+            fakeAnswer1.copy(answerOptionId = 1)
+        )
 
         val statsForAnswerOptions =
             surveyAnswersService.getStatsForAnswerOptions(fakeQuestionnaire.id, fakeQuestion1.id)
@@ -146,6 +153,6 @@ private val fakeSurveyAnswersRequest = SurveyAnswersDto(
 private val fakeSurveyAnswerStats1 =
     QuestionAnswerStats(
         fakeQuestion1.id,
-        listOf(AnswerOptionPercentile(1, 1)),
+        listOf(AnswerOptionPercentile(1, 1), AnswerOptionPercentile(2, 0)),
         totalVotes = 1
     )

@@ -1,5 +1,6 @@
 package com.research.surveyor.services
 
+import com.research.surveyor.exceptions.ConflictException
 import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.Questionnaire
@@ -21,8 +22,14 @@ class QuestionnaireService(private val questionnaireRepository: QuestionnaireRep
             .orElseThrow { EntityNotFoundException("Could not find questionnaire.") }
     }
 
-    // TODO: Handle status transition
     fun update(questionnaireToUpdate: Questionnaire): Questionnaire {
+        val questionnaire = questionnaireRepository.findById(questionnaireToUpdate.id)
+        if(questionnaire.isEmpty)
+            throw EntityNotFoundException("Could not find questionnaire.")
+
+        if (questionnaire.get().status != QuestionnaireStatus.DRAFT)
+            throw ConflictException("Cannot update questionnaires not in DRAFT.")
+
         return questionnaireRepository.save(questionnaireToUpdate)
     }
 }

@@ -1,5 +1,6 @@
 package com.research.surveyor.services
 
+import com.research.surveyor.exceptions.ConflictException
 import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.Questionnaire
@@ -36,12 +37,12 @@ internal class QuestionnaireServiceTest {
         verify(exactly = 0) { questionnaireRepository.save(any()) }
     }
 
-    // TODO: Add 404 for updating questionnaire
     @Test
     fun `should update questionnaire`() {
-        every { questionnaireRepository.save(fakeQuestionnaire) } returns fakeQuestionnaire.copy(title = "afaf")
+        every { questionnaireRepository.findById(1) } returns Optional.of(fakeQuestionnaire)
+        every { questionnaireRepository.save(fakeQuestionnaire.copy(1)) } returns fakeQuestionnaire.copy(title = "afaf")
 
-        val updatedQuestionnaire = questionnaireService.update(fakeQuestionnaire)
+        val updatedQuestionnaire = questionnaireService.update(fakeQuestionnaire.copy(1))
 
         updatedQuestionnaire `should be equal to` fakeQuestionnaire.copy(title = "afaf")
     }
@@ -59,7 +60,24 @@ internal class QuestionnaireServiceTest {
     internal fun `Should throw 404 for non existent questionnaire`() {
         every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.empty()
 
-        invoking {  questionnaireService.get(fakeQuestionnaire.id) } shouldThrow EntityNotFoundException("Could not find questionnaire.")
+        invoking { questionnaireService.get(fakeQuestionnaire.id) } shouldThrow EntityNotFoundException::class
+    }
+
+    @Test
+    internal fun `Should throw 404 for non existent questionnaire, when updating`() {
+        every { questionnaireRepository.findById(1) } returns Optional.empty()
+
+        invoking { questionnaireService.update(fakeQuestionnaire.copy(id = 1)) } shouldThrow EntityNotFoundException::class
+    }
+
+    @Test
+    internal fun `Should not allow to update a published questionnaire`() {
+        val fakeQuestionnaireWithId = fakeQuestionnaire.copy(1)
+        every { questionnaireRepository.findById(fakeQuestionnaireWithId.id) } returns Optional.of(
+            fakeQuestionnaireWithId.copy(status = QuestionnaireStatus.PUBLISHED)
+        )
+
+        invoking { questionnaireService.update(fakeQuestionnaireWithId) } shouldThrow ConflictException::class
     }
 }
 

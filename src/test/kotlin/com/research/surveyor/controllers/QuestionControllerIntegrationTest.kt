@@ -92,6 +92,18 @@ class QuestionControllerIntegrationTest {
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(fakeQuestionResponse)))
     }
+
+    @Test
+    internal fun `Should delete question by id`() {
+        every { questionService.delete(fakeQuestion.id) } returns Unit
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .delete("/questionnaires/${fakeQuestionnaire.id}/questions/${fakeQuestion.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isNoContent)
+    }
 }
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)

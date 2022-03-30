@@ -50,6 +50,15 @@ internal class QuestionControllerTest {
         fetchedQuestion.statusCode `should be equal to` HttpStatus.NO_CONTENT
         verify { questionService.update(fakeQuestionRequest) }
     }
+
+    @Test
+    fun `Should delete the question`() {
+        every { questionService.delete(fakeQuestionRequest.id) } returns Unit
+
+        questionController.delete(fakeQuestionnaire.id, fakeQuestionRequest.id)
+
+        verify { questionService.delete(fakeQuestionRequest.id) }
+    }
 }
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)

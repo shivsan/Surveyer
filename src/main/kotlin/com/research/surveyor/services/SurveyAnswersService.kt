@@ -60,16 +60,19 @@ class SurveyAnswersService(
         .any { questionIdWithAnswersGrouping -> questionIdWithAnswersGrouping.second.size > 1 }
 
     fun getStatsForAnswerOptions(questionnaireId: Long, questionId: Long): QuestionAnswerStats {
-        val allAnswers = surveyAnswerRepository.findAllByQuestionId(questionId)
+        val allSurveyAnswers = surveyAnswerRepository.findAllByQuestionId(questionId)
+        val allAnswerOptions = answerOptionRepository.findByQuestionId(questionId)
         return QuestionAnswerStats(
             questionId,
-            allAnswers.groupBy { answer -> answer.answerOptionId }.map { answerOptionGroup ->
+            allAnswerOptions.map { answerOption ->
                 AnswerOptionPercentile(
-                    answerOptionGroup.key,
-                    (answerOptionGroup.value.size / allAnswers.size).toLong()
+                    answerOption.id,
+                    allSurveyAnswers
+                        .filter { surveyAnswer -> surveyAnswer.answerOptionId == answerOption.id }
+                        .size.toLong()
                 )
             },
-            allAnswers.size.toLong()
+            allSurveyAnswers.size.toLong()
         )
     }
 }

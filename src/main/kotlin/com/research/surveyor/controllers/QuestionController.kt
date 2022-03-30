@@ -8,6 +8,7 @@ import com.research.surveyor.models.Question
 import com.research.surveyor.services.QuestionService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -40,6 +41,12 @@ class QuestionController(private val questionService: QuestionService) {
     @GetMapping("/questionnaires/{questionnaireId}/questions/{id}")
     fun get(@PathVariable questionnaireId: Long, @PathVariable id: Long): ResponseEntity<QuestionResponse> {
         return ResponseEntity.ok(questionService.get(questionId = id, questionnaireId = questionnaireId).toResponse())
+    }
+
+    @DeleteMapping("/questionnaires/{questionnaireId}/questions/{id}")
+    fun delete(@PathVariable questionnaireId: Long, @PathVariable id: Long): ResponseEntity<Unit> {
+        questionService.delete(id)
+        return ResponseEntity.noContent().build()
     }
 }
 

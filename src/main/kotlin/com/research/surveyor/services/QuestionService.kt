@@ -2,9 +2,11 @@ package com.research.surveyor.services
 
 import com.research.surveyor.controllers.request.AnswerOptionRequest
 import com.research.surveyor.controllers.request.QuestionRequest
+import com.research.surveyor.exceptions.ConflictException
 import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.models.AnswerOption
 import com.research.surveyor.models.Question
+import com.research.surveyor.models.QuestionnaireStatus
 import com.research.surveyor.repositories.AnswerOptionRepository
 import com.research.surveyor.repositories.QuestionRepository
 import com.research.surveyor.repositories.QuestionnaireRepository
@@ -38,6 +40,9 @@ class QuestionService(
         if (questionnaire.isEmpty)
             throw EntityNotFoundException("Could not find questionnaire")
 
+        if(questionnaire.get().status != QuestionnaireStatus.DRAFT)
+            throw ConflictException("Cannot update questionnaires that are not in DRAFT status.")
+
         if (questionRepository.findById(questionToUpdate.id).isEmpty)
             throw EntityNotFoundException("Could not find question.")
 
@@ -48,6 +53,13 @@ class QuestionService(
         val savedAnswerOptions =
             answerOptionRepository.saveAll(questionToUpdate.options.map { option -> option.toAnswerOption(savedQuestion) })
         return questionRepository.findById(savedQuestion.id).get().copy(options = savedAnswerOptions.toList())
+    }
+
+    fun delete(questionId: Long) {
+        if(!questionRepository.existsById(questionId))
+            throw EntityNotFoundException("Could not find question.")
+
+        questionRepository.deleteById(questionId)
     }
 }
 
