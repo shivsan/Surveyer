@@ -57,6 +57,11 @@ class SurveyAnswersService(
         .any { questionIdWithAnswersGrouping -> questionIdWithAnswersGrouping.second.size > 1 }
 
     fun getStatsForAnswerOptions(questionnaireId: Long, questionId: Long): QuestionAnswerStats {
+        if (!questionnaireRepository.existsById(questionnaireId))
+            throw EntityNotFoundException("Could not find questionnaire.")
+        if (!questionRepository.existsById(questionId))
+            throw EntityNotFoundException("Could not find question.")
+
         val allSurveyAnswers = surveyAnswerRepository.findAllByQuestionId(questionId)
         val allAnswerOptions = answerOptionRepository.findByQuestionId(questionId)
         return QuestionAnswerStats(

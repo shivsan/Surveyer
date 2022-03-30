@@ -18,6 +18,7 @@ import com.research.surveyor.repositories.SurveyAnswerRepository
 import com.research.surveyor.repositories.SurveyAnswersRepository
 import io.mockk.every
 import io.mockk.mockk
+import java.util.*
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.invoking
 import org.amshove.kluent.shouldThrow
@@ -113,6 +114,8 @@ internal class SurveyAnswersServiceTest {
 
     @Test
     fun `Should get stats for all answers of a question`() {
+        every { questionnaireRepository.existsById(fakeQuestionnaire.id) } returns true
+        every { questionRepository.existsById(fakeQuestion1.id) } returns true
         every { answerOptionRepository.findByQuestionId(fakeQuestion1.id) } returns listOf(
             fakeAnswerOption1.copy(id = 1),
             fakeAnswerOption2.copy(id = 2)
@@ -125,6 +128,31 @@ internal class SurveyAnswersServiceTest {
             surveyAnswersService.getStatsForAnswerOptions(fakeQuestionnaire.id, fakeQuestion1.id)
 
         statsForAnswerOptions `should be equal to` fakeSurveyAnswerStats1
+    }
+
+    @Test
+    fun `Should throw 404 for non existent questionnaire`() {
+        every { questionnaireRepository.existsById(fakeQuestionnaire.id) } returns false
+
+        invoking {
+            surveyAnswersService.getStatsForAnswerOptions(
+                fakeQuestionnaire.id,
+                fakeQuestion1.id
+            )
+        } shouldThrow EntityNotFoundException::class
+    }
+
+    @Test
+    fun `Should throw 404 for non existent question`() {
+        every { questionnaireRepository.existsById(fakeQuestionnaire.id) } returns true
+        every { questionRepository.existsById(fakeQuestion1.id) } returns false
+
+        invoking {
+            surveyAnswersService.getStatsForAnswerOptions(
+                fakeQuestionnaire.id,
+                fakeQuestion1.id
+            )
+        } shouldThrow EntityNotFoundException::class
     }
 }
 
