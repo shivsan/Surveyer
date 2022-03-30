@@ -31,7 +31,7 @@ internal class QuestionServiceTest {
     fun `should create question`() {
         every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
         every { questionRepository.save(fakeQuestion) } returns fakeQuestion
-        every { answerOptionRepository.saveAll<AnswerOption>(any()) } returns fakeOptions
+        every { answerOptionRepository.saveAll(fakeOptions) } returns fakeOptions
         every { questionRepository.findById(fakeQuestion.id) } returns Optional.of(fakeQuestion)
 
         val createdQuestion = questionService.create(fakeQuestionRequest)

@@ -27,10 +27,15 @@ class QuestionService(
         if (questionnaire.isEmpty)
             throw EntityNotFoundException("Could not find questionnaire")
 
-        val question = questionRequest.toQuestion()
-        val savedQuestion = questionRepository.save(question)
+        val savedQuestion = questionRepository.save(questionRequest.toQuestion())
         val savedAnswerOptions =
-            answerOptionRepository.saveAll(questionRequest.options.map { option -> option.toAnswerOption(savedQuestion) })
+            answerOptionRepository.saveAll(questionRequest.options.map { option ->
+                AnswerOption(
+                    option.optionIndex,
+                    option.option,
+                    savedQuestion
+                )
+            })
         return questionRepository.findById(savedQuestion.id).get().copy(options = savedAnswerOptions.toList())
     }
 
