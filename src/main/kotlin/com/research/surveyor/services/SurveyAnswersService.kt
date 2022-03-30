@@ -40,11 +40,8 @@ class SurveyAnswersService(
         if (!questionnaireRepository.existsById(surveyAnswersRequest.questionnaireId))
             throw EntityNotFoundException("Questionnaire does not exist")
         surveyAnswersRequest.answers.forEach { answer ->
-            if (!questionRepository.existsById(answer.questionId)) {
-                throw EntityNotFoundException("Question with id ${answer.questionId} does not exist")
-            }
-            if (!answerOptionRepository.existsById(answer.answerOptionId)) {
-                throw EntityNotFoundException("Answer option with id ${answer.answerOptionId} does not exist")
+            if (!answerOptionRepository.existsByQuestionIdAndId(answer.questionId, answer.answerOptionId)) {
+                throw InvalidRequestException("Answer option with id ${answer.answerOptionId} does not match for question with id ${answer.questionId}")
             }
         }
         val surveyQuestions = questionRepository.findByQuestionnaireId(surveyAnswersRequest.questionnaireId)

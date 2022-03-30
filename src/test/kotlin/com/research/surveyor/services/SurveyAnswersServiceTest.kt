@@ -38,10 +38,9 @@ internal class SurveyAnswersServiceTest {
     )
 
     @Test
-    internal fun `Should create survey answers`() {
-        every { questionRepository.existsById(any()) } returns true
+    fun `Should create survey answers`() {
         every { questionnaireRepository.existsById(any()) } returns true
-        every { answerOptionRepository.existsById(any()) } returns true
+        every { answerOptionRepository.existsByQuestionIdAndId(any(), any()) } returns true
         every { questionRepository.findByQuestionnaireId(fakeQuestionnaire.id) } returns listOf(
             fakeQuestion1,
             fakeQuestion2
@@ -63,28 +62,18 @@ internal class SurveyAnswersServiceTest {
     }
 
     @Test
-    internal fun `Should throw exception for bad ids - questionnaire, question, answerOptions`() {
-        every { questionRepository.existsById(any()) } returns false
+    fun `Should throw exception for bad ids - questionnaire, question, answerOptions`() {
         every { questionnaireRepository.existsById(any()) } returns true
-        every { answerOptionRepository.existsById(any()) } returns true
+        every { answerOptionRepository.existsByQuestionIdAndId(any(), any()) } returns false
+        invoking { surveyAnswersService.create(fakeSurveyAnswersRequest) } shouldThrow InvalidRequestException::class
 
-        invoking { surveyAnswersService.create(fakeSurveyAnswersRequest) } shouldThrow EntityNotFoundException::class
-
-        every { questionRepository.existsById(any()) } returns true
         every { questionnaireRepository.existsById(any()) } returns false
-        every { answerOptionRepository.existsById(any()) } returns true
-
-        invoking { surveyAnswersService.create(fakeSurveyAnswersRequest) } shouldThrow EntityNotFoundException::class
-
-        every { questionRepository.existsById(any()) } returns true
-        every { questionnaireRepository.existsById(any()) } returns true
-        every { answerOptionRepository.existsById(any()) } returns false
-
+        every { answerOptionRepository.existsByQuestionIdAndId(any(), any()) } returns true
         invoking { surveyAnswersService.create(fakeSurveyAnswersRequest) } shouldThrow EntityNotFoundException::class
     }
 
     @Test
-    internal fun `Should not allow duplicate answers`() {
+    fun `Should not allow duplicate answers`() {
         every { questionRepository.existsById(any()) } returns true
         every { questionnaireRepository.existsById(any()) } returns true
         every { answerOptionRepository.existsById(any()) } returns true
@@ -96,13 +85,12 @@ internal class SurveyAnswersServiceTest {
 
     @Test
     fun `Should not allow incomplete surveys`() {
+        every { answerOptionRepository.existsByQuestionIdAndId(any(), any()) } returns false
         every { questionnaireRepository.existsById(fakeQuestionnaire.id) } returns true
-        every { questionRepository.existsById(any()) } returns true
         every { questionRepository.findByQuestionnaireId(fakeQuestionnaire.id) } returns listOf(
             fakeQuestion1,
             fakeQuestion2
         )
-        every { answerOptionRepository.existsById(any()) } returns true
 
         invoking {
             surveyAnswersService.create(fakeSurveyAnswersRequest.copy(answers = listOf(fakeAnswer1)))
@@ -110,7 +98,21 @@ internal class SurveyAnswersServiceTest {
     }
 
     @Test
-    internal fun `Should get stats for all answers of a question`() {
+    fun `Should not mismatch of questions and answer options`() {
+        every { questionnaireRepository.existsById(fakeQuestionnaire.id) } returns true
+        every { answerOptionRepository.existsByQuestionIdAndId(any(), any()) } returns false
+        every { questionRepository.findByQuestionnaireId(fakeQuestionnaire.id) } returns listOf(
+            fakeQuestion1,
+            fakeQuestion2
+        )
+
+        invoking {
+            surveyAnswersService.create(fakeSurveyAnswersRequest.copy(answers = listOf(fakeAnswer1)))
+        } shouldThrow InvalidRequestException::class
+    }
+
+    @Test
+    fun `Should get stats for all answers of a question`() {
         every { answerOptionRepository.findByQuestionId(fakeQuestion1.id) } returns listOf(
             fakeAnswerOption1.copy(id = 1),
             fakeAnswerOption2.copy(id = 2)

@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface AnswerOptionRepository: CrudRepository<AnswerOption, Long> {
     fun findByQuestionId(questionId: Long): List<AnswerOption>
+    fun existsByQuestionIdAndId(questionId: Long, id: Long): Boolean
 }
