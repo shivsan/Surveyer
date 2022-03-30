@@ -44,6 +44,10 @@ class QuestionService(
             .orElseThrow { EntityNotFoundException("Could not find question.") }
     }
 
+    fun getAll(): List<Question> {
+        return questionRepository.findAll().toList()
+    }
+
     fun update(questionToUpdate: QuestionRequest): Question {
         if (questionToUpdate.options.isEmpty())
             throw InvalidRequestException("Question should have at least one option.")

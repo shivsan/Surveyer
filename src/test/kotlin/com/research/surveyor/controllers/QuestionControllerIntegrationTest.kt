@@ -94,6 +94,19 @@ class QuestionControllerIntegrationTest {
     }
 
     @Test
+    internal fun `Should get all questions`() {
+        every { questionService.getAll() } returns listOf(fakeQuestion.copy(options = fakeOptions))
+
+        mockMvc.perform(
+            MockMvcRequestBuilders
+                .get("/questions")
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(listOf(fakeQuestionResponse))))
+    }
+
+    @Test
     internal fun `Should delete question by id`() {
         every { questionService.delete(fakeQuestion.id) } returns Unit
 

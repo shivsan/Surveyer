@@ -43,6 +43,11 @@ class QuestionController(private val questionService: QuestionService) {
         return ResponseEntity.ok(questionService.get(questionId = id, questionnaireId = questionnaireId).toResponse())
     }
 
+    @GetMapping("/questions")
+    fun getAll(): ResponseEntity<List<QuestionResponse>> {
+        return ResponseEntity.ok(questionService.getAll().map { it -> it.toResponse() })
+    }
+
     @DeleteMapping("/questionnaires/{questionnaireId}/questions/{id}")
     fun delete(@PathVariable questionnaireId: Long, @PathVariable id: Long): ResponseEntity<Unit> {
         questionService.delete(id)

@@ -71,6 +71,15 @@ internal class QuestionServiceTest {
     }
 
     @Test
+    fun `Should get all questions`() {
+        every { questionRepository.findAll() } returns listOf(fakeQuestion)
+
+        val fetchedQuestions = questionService.getAll()
+
+        fetchedQuestions `should be equal to` listOf(fakeQuestion)
+    }
+
+    @Test
     fun `Should throw 404 for non existent question`() {
         every { questionRepository.findById(fakeQuestion.id) } returns Optional.empty()
 

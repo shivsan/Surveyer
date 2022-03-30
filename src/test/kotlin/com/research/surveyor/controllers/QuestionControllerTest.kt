@@ -33,11 +33,28 @@ internal class QuestionControllerTest {
     @Test
     fun `should get a question`() {
         val questionToFetch = fakeQuestion
-        every { questionService.get(questionnaireId = fakeQuestionnaire.id, questionId = fakeQuestion.id) } returns questionToFetch.copy(options = fakeOptions)
+        every {
+            questionService.get(
+                questionnaireId = fakeQuestionnaire.id,
+                questionId = fakeQuestion.id
+            )
+        } returns questionToFetch.copy(options = fakeOptions)
 
         val fetchedQuestion = questionController.get(fakeQuestionnaire.id, fakeQuestion.id)
 
+        fetchedQuestion.statusCode `should be equal to` HttpStatus.OK
         fetchedQuestion.body `should be equal to` fakeQuestionResponse
+    }
+
+    @Test
+    fun `should get all questions`() {
+        val questionToFetch = fakeQuestion
+        every { questionService.getAll() } returns listOf(questionToFetch.copy(options = fakeOptions))
+
+        val fetchedQuestions = questionController.getAll()
+
+        fetchedQuestions.statusCode `should be equal to` HttpStatus.OK
+        fetchedQuestions.body `should be equal to` listOf(fakeQuestionResponse)
     }
 
     @Test
@@ -83,6 +100,16 @@ private val fakeOptionsResponse = listOf(
     AnswerOptionResponse(4, "d", "Monday")
 )
 private val fakeQuestionRequest =
-    QuestionRequest(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id, options = fakeOptionsRequest)
+    QuestionRequest(
+        id = 1,
+        questionValue = "Question?",
+        questionnaireId = fakeQuestionnaire.id,
+        options = fakeOptionsRequest
+    )
 private val fakeQuestionResponse =
-    QuestionResponse(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id, options = fakeOptionsResponse)
+    QuestionResponse(
+        id = 1,
+        questionValue = "Question?",
+        questionnaireId = fakeQuestionnaire.id,
+        options = fakeOptionsResponse
+    )
