@@ -4,6 +4,7 @@ import com.research.surveyor.controllers.request.AnswerOptionRequest
 import com.research.surveyor.controllers.request.QuestionRequest
 import com.research.surveyor.exceptions.ConflictException
 import com.research.surveyor.exceptions.EntityNotFoundException
+import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.AnswerOption
 import com.research.surveyor.models.Question
 import com.research.surveyor.models.QuestionnaireStatus
@@ -19,10 +20,13 @@ class QuestionService(
     private val answerOptionRepository: AnswerOptionRepository
 ) {
     fun create(questionRequest: QuestionRequest): Question {
+        if (questionRequest.options.isEmpty())
+            throw InvalidRequestException("Question should have at least one option.")
         val questionnaire =
             questionnaireRepository.findById(questionRequest.questionnaireId)// TODO: test this, 404 this
         if (questionnaire.isEmpty)
             throw EntityNotFoundException("Could not find questionnaire")
+
         val question = questionRequest.toQuestion()
         val savedQuestion = questionRepository.save(question)
         val savedAnswerOptions =
@@ -36,11 +40,13 @@ class QuestionService(
     }
 
     fun update(questionToUpdate: QuestionRequest): Question {
+        if (questionToUpdate.options.isEmpty())
+            throw InvalidRequestException("Question should have at least one option.")
         val questionnaire = questionnaireRepository.findById(questionToUpdate.questionnaireId)
         if (questionnaire.isEmpty)
             throw EntityNotFoundException("Could not find questionnaire")
 
-        if(questionnaire.get().status != QuestionnaireStatus.DRAFT)
+        if (questionnaire.get().status != QuestionnaireStatus.DRAFT)
             throw ConflictException("Cannot update questionnaires that are not in DRAFT status.")
 
         if (questionRepository.findById(questionToUpdate.id).isEmpty)
@@ -56,7 +62,7 @@ class QuestionService(
     }
 
     fun delete(questionId: Long) {
-        if(!questionRepository.existsById(questionId))
+        if (!questionRepository.existsById(questionId))
             throw EntityNotFoundException("Could not find question.")
 
         questionRepository.deleteById(questionId)

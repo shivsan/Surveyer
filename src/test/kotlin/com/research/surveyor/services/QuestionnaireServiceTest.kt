@@ -5,6 +5,7 @@ import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
+import com.research.surveyor.repositories.QuestionRepository
 import com.research.surveyor.repositories.QuestionnaireRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -17,7 +18,8 @@ import org.junit.jupiter.api.Test
 
 internal class QuestionnaireServiceTest {
     private val questionnaireRepository = mockk<QuestionnaireRepository>()
-    private val questionnaireService = QuestionnaireService(questionnaireRepository)
+    private val questionRepository = mockk<QuestionRepository>()
+    private val questionnaireService = QuestionnaireService(questionnaireRepository, questionRepository)
 
     @Test
     fun `should create questionnaire`() {
@@ -78,6 +80,15 @@ internal class QuestionnaireServiceTest {
         )
 
         invoking { questionnaireService.update(fakeQuestionnaireWithId) } shouldThrow ConflictException::class
+    }
+
+    @Test
+    fun `should not publish an empty questionnaire`() {
+        val questionnaireToUpdate = fakeQuestionnaire.copy(status = QuestionnaireStatus.PUBLISHED)
+        every { questionnaireRepository.findById(fakeQuestionnaire.id) } returns Optional.of(fakeQuestionnaire)
+        every { questionRepository.findByQuestionnaireId(questionnaireToUpdate.id) } returns emptyList()
+
+        invoking { questionnaireService.update(questionnaireToUpdate) } shouldThrow InvalidRequestException::class
     }
 }
 

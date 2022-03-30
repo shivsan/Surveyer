@@ -5,11 +5,15 @@ import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
+import com.research.surveyor.repositories.QuestionRepository
 import com.research.surveyor.repositories.QuestionnaireRepository
 import org.springframework.stereotype.Service
 
 @Service
-class QuestionnaireService(private val questionnaireRepository: QuestionnaireRepository) {
+class QuestionnaireService(
+    private val questionnaireRepository: QuestionnaireRepository,
+    private val questionRepository: QuestionRepository
+) {
     fun create(questionnaireToCreate: Questionnaire): Questionnaire {
         if (questionnaireToCreate.status != QuestionnaireStatus.DRAFT)
             throw InvalidRequestException("Only draft questionnaires can be created")
@@ -24,11 +28,15 @@ class QuestionnaireService(private val questionnaireRepository: QuestionnaireRep
 
     fun update(questionnaireToUpdate: Questionnaire): Questionnaire {
         val questionnaire = questionnaireRepository.findById(questionnaireToUpdate.id)
-        if(questionnaire.isEmpty)
+        if (questionnaire.isEmpty)
             throw EntityNotFoundException("Could not find questionnaire.")
 
         if (questionnaire.get().status != QuestionnaireStatus.DRAFT)
             throw ConflictException("Cannot update questionnaires not in DRAFT.")
+
+        if (questionnaire.get().status == QuestionnaireStatus.DRAFT && questionnaireToUpdate.status == QuestionnaireStatus.PUBLISHED)
+            if (questionRepository.findByQuestionnaireId(questionnaireToUpdate.id).isEmpty())
+                throw InvalidRequestException("Cannot publish an empty questionnaire")
 
         return questionnaireRepository.save(questionnaireToUpdate)
     }

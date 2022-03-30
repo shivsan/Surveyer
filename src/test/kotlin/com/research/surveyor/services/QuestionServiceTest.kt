@@ -4,6 +4,7 @@ import com.research.surveyor.controllers.request.AnswerOptionRequest
 import com.research.surveyor.controllers.request.QuestionRequest
 import com.research.surveyor.exceptions.ConflictException
 import com.research.surveyor.exceptions.EntityNotFoundException
+import com.research.surveyor.exceptions.InvalidRequestException
 import com.research.surveyor.models.AnswerOption
 import com.research.surveyor.models.Question
 import com.research.surveyor.models.Questionnaire
@@ -88,6 +89,16 @@ internal class QuestionServiceTest {
         )
 
         invoking { questionService.update(fakeQuestionRequest) } shouldThrow ConflictException::class
+    }
+
+    @Test
+    fun `Should not allow to update question with empty answer options`() {
+        invoking { questionService.update(fakeQuestionRequest.copy(options = emptyList())) } shouldThrow InvalidRequestException::class
+    }
+
+    @Test
+    fun `Should not allow to create question with empty answer options`() {
+        invoking { questionService.create(fakeQuestionRequest.copy(options = emptyList())) } shouldThrow InvalidRequestException::class
     }
 
     @Test
