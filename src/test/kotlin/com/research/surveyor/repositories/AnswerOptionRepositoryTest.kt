@@ -77,10 +77,8 @@ class AnswerOptionRepositoryTest {
     }
 }
 
-
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
 private val fakeQuestion =
     Question(id = 1, questionValue = "Question?", questionnaireId = fakeQuestionnaire.id)
 private val fakeAnswerOption =
     AnswerOption("a", "Monday", fakeQuestion)
-

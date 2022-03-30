@@ -2,7 +2,6 @@ package com.research.surveyor.controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
-import com.research.surveyor.controllers.request.Answer
 import com.research.surveyor.controllers.request.SurveyAnswersDto
 import com.research.surveyor.models.AnswerOptionPercentile
 import com.research.surveyor.models.QuestionAnswerStats
@@ -35,7 +34,7 @@ internal class SurveyAnswersControllerIntegrationTest {
 
     @Test
     internal fun `Should create a survey response for a survey`() {
-        every { surveyAnswersService.create(fakeSurveyAnswersRequest) } returns listOf(fakeSurveyAnswers.copy(id = 1))
+        every { surveyAnswersService.create(fakeSurveyAnswersRequest) } returns fakeSurveyAnswersRequest.copy(id = 1)
 
         mockMvc.perform(
             MockMvcRequestBuilders
@@ -45,7 +44,7 @@ internal class SurveyAnswersControllerIntegrationTest {
         ).andExpect(MockMvcResultMatchers.status().isCreated)
             .andExpect(
                 MockMvcResultMatchers.content()
-                    .json(objectMapper.writeValueAsString(fakeSurveyAnswersRequest.copy(questionnaireId = 1)))
+                    .json(objectMapper.writeValueAsString(fakeSurveyAnswersRequest.copy(id = 1)))
             )
     }
 
@@ -64,14 +63,9 @@ internal class SurveyAnswersControllerIntegrationTest {
     }
 }
 
-private val fakeSurveyAnswers = SurveyAnswer(
-    questionnaireId = 1,
-    questionId = 1,
-    answerOptionId = 1
-)
 private val fakeSurveyAnswersRequest = SurveyAnswersDto(
     questionnaireId = 1,
-    answers = listOf(Answer(questionId = 1, answerOptionId = 1))
+    answers = listOf(SurveyAnswer(questionId = 1, answerOptionId = 1), SurveyAnswer(questionId = 2, answerOptionId = 1))
 )
 
 private val fakeQuestionAnswerStats = QuestionAnswerStats(

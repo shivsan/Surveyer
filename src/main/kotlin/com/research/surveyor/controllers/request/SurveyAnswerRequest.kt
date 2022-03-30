@@ -1,11 +1,9 @@
 package com.research.surveyor.controllers.request
 
-data class SurveyAnswersDto(
-    val questionnaireId: Long,
-    val answers: List<Answer>,
-)
+import com.research.surveyor.models.SurveyAnswer
 
-data class Answer(
-    val questionId: Long,
-    val answerOptionId: Long
+data class SurveyAnswersDto(
+    val id: Long = 0,
+    val questionnaireId: Long,
+    val answers: List<SurveyAnswer>,
 )

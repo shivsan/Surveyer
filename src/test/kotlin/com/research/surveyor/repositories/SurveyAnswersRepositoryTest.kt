@@ -6,8 +6,8 @@ import com.research.surveyor.models.AnswerOption
 import com.research.surveyor.models.Question
 import com.research.surveyor.models.Questionnaire
 import com.research.surveyor.models.QuestionnaireStatus
+import com.research.surveyor.models.SurveyAnswer
 import org.amshove.kluent.`should be equal to`
-import org.amshove.kluent.`should not be`
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -17,10 +17,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @ExtendWith(SpringExtension::class)
 @DataJpaTest
-class SurveyAnswersTest {
+class SurveyAnswersRepositoryTest {
 
     @Autowired
-    private lateinit var surveyAnswersRepository: SurveyAnswersRepository
+    private lateinit var surveyAnswerRepository: SurveyAnswerRepository
 
     @Autowired
     private lateinit var questionnaireRepository: QuestionnaireRepository
@@ -43,11 +43,35 @@ class SurveyAnswersTest {
     }
 
     @Test
-    internal fun `should save the question`() {
+    internal fun `should save the answer`() {
+        val savedQuestionAnswer = surveyAnswerRepository.save(
+            SurveyAnswer(
+                questionId = question.id,
+                answerOptionId = answerOption.id
+            )
+        )
 
+        savedQuestionAnswer `should be equal to` SurveyAnswer(
+            questionId = question.id,
+            answerOptionId = answerOption.id
+        ).copy(id = savedQuestionAnswer.id)
+    }
+
+    @Test
+    internal fun `should fetch all the survey answers`() {
+        val savedQuestionAnswer = surveyAnswerRepository.save(
+            SurveyAnswer(
+                questionId = question.id,
+                answerOptionId = answerOption.id
+            )
+        )
+
+        savedQuestionAnswer `should be equal to` SurveyAnswer(
+            questionId = question.id,
+            answerOptionId = answerOption.id
+        ).copy(id = savedQuestionAnswer.id)
     }
 }
-
 
 private val fakeQuestionnaire = Questionnaire(title = "New questionnaire", status = QuestionnaireStatus.DRAFT)
 private val fakeQuestion =

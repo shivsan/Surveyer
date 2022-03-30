@@ -3,11 +3,14 @@ package com.research.surveyor.services
 import com.research.surveyor.controllers.request.SurveyAnswersDto
 import com.research.surveyor.exceptions.EntityNotFoundException
 import com.research.surveyor.exceptions.InvalidRequestException
+import com.research.surveyor.models.AnswerOptionPercentile
 import com.research.surveyor.models.QuestionAnswerStats
 import com.research.surveyor.models.SurveyAnswer
+import com.research.surveyor.models.SurveyAnswers
 import com.research.surveyor.repositories.AnswerOptionRepository
 import com.research.surveyor.repositories.QuestionRepository
 import com.research.surveyor.repositories.QuestionnaireRepository
+import com.research.surveyor.repositories.SurveyAnswerRepository
 import com.research.surveyor.repositories.SurveyAnswersRepository
 import org.springframework.stereotype.Service
 
@@ -16,12 +19,18 @@ class SurveyAnswersService(
     private val questionRepository: QuestionRepository,
     private val questionnaireRepository: QuestionnaireRepository,
     private val answerOptionRepository: AnswerOptionRepository,
-    private val surveyAnswersRepository: SurveyAnswersRepository
+    private val surveyAnswersRepository: SurveyAnswersRepository,
+    private val surveyAnswerRepository: SurveyAnswerRepository
 ) {
-    fun create(surveyAnswersRequest: SurveyAnswersDto): List<SurveyAnswer> {
+    fun create(surveyAnswersRequest: SurveyAnswersDto): SurveyAnswersDto {
         validate(surveyAnswersRequest)
-
-        return surveyAnswersRepository.saveAll(surveyAnswersRequest.toSurveyAnswers()).toList()
+        val savedSurveyAnswers =
+            surveyAnswersRepository.save(SurveyAnswers(questionnaireId = surveyAnswersRequest.questionnaireId))
+        return SurveyAnswersDto(
+            savedSurveyAnswers.id,
+            savedSurveyAnswers.questionnaireId,
+            surveyAnswerRepository.saveAll(surveyAnswersRequest.toSurveyAnswers(savedSurveyAnswers)).toList()
+        )
     }
 
     private fun validate(surveyAnswersRequest: SurveyAnswersDto) {
@@ -51,16 +60,26 @@ class SurveyAnswersService(
         .any { questionIdWithAnswersGrouping -> questionIdWithAnswersGrouping.second.size > 1 }
 
     fun getStatsForAnswerOptions(questionnaireId: Long, questionId: Long): QuestionAnswerStats {
-        TODO("Not yet implemented")
+        val allAnswers = surveyAnswerRepository.findAllByQuestionId(questionId)
+        return QuestionAnswerStats(
+            questionId,
+            allAnswers.groupBy { answer -> answer.answerOptionId }.map { answerOptionGroup ->
+                AnswerOptionPercentile(
+                    answerOptionGroup.key,
+                    (answerOptionGroup.value.size / allAnswers.size).toLong()
+                )
+            },
+            allAnswers.size.toLong()
+        )
     }
 }
 
-private fun SurveyAnswersDto.toSurveyAnswers(): List<SurveyAnswer> {
+private fun SurveyAnswersDto.toSurveyAnswers(savedSurveyAnswers: SurveyAnswers): List<SurveyAnswer> {
     return this.answers.map { answer ->
         SurveyAnswer(
-            questionnaireId = this.questionnaireId,
-            answerOptionId = answer.answerOptionId,
-            questionId = answer.questionId
+            surveyAnswersId = savedSurveyAnswers.id,
+            questionId = answer.questionId,
+            answerOptionId = answer.answerOptionId
         )
     }
 }
