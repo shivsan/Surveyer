@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface AnswerOptionRepository: CrudRepository<AnswerOption, Long> {
-    fun findByQuestion(question: Question): List<AnswerOption>
+    fun findByQuestionId(questionId: Long): List<AnswerOption>
 }

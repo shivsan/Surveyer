@@ -58,12 +58,21 @@ class AnswerOptionRepositoryTest {
 
         val updatedQuestion = questionRepository.findById(questionId)
 
-        updatedQuestion.get() `should be equal to` fakeQuestion.copy(id = savedQuestion.id, questionnaireId = questionnaire.id)
+        updatedQuestion.get() `should be equal to` fakeQuestion.copy(
+            id = savedQuestion.id,
+            questionnaireId = questionnaire.id
+        )
         val updatedAnswerOption1 = answerOptionRepository.findById(updatedAnswerOptions.toList()[0].id)
         val updatedAnswerOption2 = answerOptionRepository.findById(updatedAnswerOptions.toList()[1].id)
 
-        updatedAnswerOption1.get().question `should be equal to` fakeQuestion.copy(id = savedQuestion.id, questionnaireId = questionnaire.id)
-        updatedAnswerOption2.get().question `should be equal to` fakeQuestion.copy(id = savedQuestion.id, questionnaireId = questionnaire.id)
+        updatedAnswerOption1.get().question `should be equal to` fakeQuestion.copy(
+            id = savedQuestion.id,
+            questionnaireId = questionnaire.id
+        )
+        updatedAnswerOption2.get().question `should be equal to` fakeQuestion.copy(
+            id = savedQuestion.id,
+            questionnaireId = questionnaire.id
+        )
     }
 
     @Test
@@ -74,6 +83,20 @@ class AnswerOptionRepositoryTest {
 
         val fetchUpdatedQuestion = questionRepository.findById(savedQuestion.id).get()
         fetchUpdatedQuestion `should be equal to` savedQuestion.copy(questionValue = "Changed title")
+    }
+
+    @Test
+    internal fun `Should get all answer options by question id`() {
+        val questionnaire = questionnaireRepository.save(fakeQuestionnaire)
+        val savedQuestion = questionRepository.save(fakeQuestion.copy(questionnaireId = questionnaire.id))
+        val questionId = savedQuestion.id
+        val answerOption1 = answerOptionRepository.save(fakeAnswerOption.copy(optionIndex = "a", question = savedQuestion))
+        val answerOption2 = answerOptionRepository.save(fakeAnswerOption.copy(optionIndex = "b", question = savedQuestion))
+
+        val fetchedAnswerOptions = answerOptionRepository.findByQuestionId(questionId)
+
+        fetchedAnswerOptions[0] `should be equal to` answerOption1
+        fetchedAnswerOptions[1] `should be equal to` answerOption2
     }
 }
 

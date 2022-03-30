@@ -44,7 +44,7 @@ class QuestionService(
         val question = questionToUpdate.toQuestion()
         val savedQuestion = questionRepository.save(question)
         // TODO: Move to a persistence layer
-        answerOptionRepository.deleteAll(answerOptionRepository.findByQuestion(savedQuestion))
+        answerOptionRepository.deleteAll(answerOptionRepository.findByQuestionId(savedQuestion.id))
         val savedAnswerOptions =
             answerOptionRepository.saveAll(questionToUpdate.options.map { option -> option.toAnswerOption(savedQuestion) })
         return questionRepository.findById(savedQuestion.id).get().copy(options = savedAnswerOptions.toList())
