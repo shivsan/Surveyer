@@ -20,3 +20,19 @@ The following tables are created:
 Statistics is returned as:
 - Number of votes per **answer option** for the question
 - Total number of votes
+
+
+Here are the endpoints:
+1. Create/update/get a questionnare
+   1. Create: POST '/questionnaires'
+   2. Get: GET '/questionnaires/{id}'
+   3. Update: PUT '/questionnaires/{id}'
+2. Create/update/get/delete a question
+    1. Create with all answer options: POST '/questionnaires/{questionnaireId}/questions/{id}'
+    2. Get with all answer options: GET '/questionnaires/{questionnaireId}/questions/{id}'
+    3. Update with all answer options: PUT '/questionnaires/{questionnaireId}/questions/{id}'
+    4. Delete: DELETE '/questionnaires/{questionnaireId}/questions/{id}'
+    5. Get all questions with all answer options: GET '/questions'
+3. Create survey and get stats
+   1. Submit a survey response : POST '/survey-answers'
+   2. Get the statistics for an answer: GET '/questionnaires/1/questions/2/answer-options/stats'
